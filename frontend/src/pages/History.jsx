@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Search, ArrowLeft, CheckSquare } from "lucide-react";
+import { Search, ArrowLeft, CheckSquare, Calendar, FileText } from "lucide-react";
 import NavBar from "../components/Navbar";
 
 const Body = () => {
@@ -42,18 +42,24 @@ const Body = () => {
     }, [email]); // Depend on email, so it runs when email updates
 
     return (
-        <div className="p-6 bg-gray-100 min-h-screen flex flex-col">
-            {/* Top Navigation */}
-            <div className="flex justify-between items-center mb-4">
-                <button className="p-2 bg-white rounded-full shadow hover:bg-gray-200 transition">
-                    <ArrowLeft size={20} />
+        <div className="p-8 bg-gray-50 min-h-screen">
+            {/* Header Section */}
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold text-gray-800">Project History</h1>
+                <p className="text-gray-600 mt-2">View and analyze your project history</p>
+            </div>
+
+            {/* Search and Navigation */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                <button className="p-2 bg-white rounded-xl shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors">
+                    <ArrowLeft className="w-5 h-5 text-gray-600" />
                 </button>
-                <div className="relative">
-                    <Search className="absolute left-3 top-3 text-gray-400" size={18} />
+                <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                     <input
                         type="text"
-                        placeholder="Search"
-                        className="pl-10 pr-4 py-2 rounded-md shadow border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                        placeholder="Search projects..."
+                        className="w-full pl-10 pr-4 py-2 rounded-xl shadow-sm border border-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
@@ -61,38 +67,56 @@ const Body = () => {
             </div>
 
             {/* Date Filters */}
-            <div className="flex justify-center space-x-12 text-sm font-semibold text-gray-600 mb-6">
-                <span>History</span>
-                <span>From Date: <span className="font-bold">{fromDate}</span></span>
-                <span>To Date: <span className="font-bold">{toDate}</span></span>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-8">
+                <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
+                    <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-500" />
+                        <span className="text-gray-600">From:</span>
+                        <span className="font-semibold text-gray-800">{fromDate}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-500" />
+                        <span className="text-gray-600">To:</span>
+                        <span className="font-semibold text-gray-800">{toDate}</span>
+                    </div>
+                </div>
             </div>
 
-            {/* History Table */}
-            <div className="bg-white shadow-lg rounded-xl p-6">
-                <h2 className="text-lg font-bold text-orange-500 mb-4">All History</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 text-gray-600 font-semibold border-b pb-2">
-                    <span>Project Name</span>
-                    <span className="hidden sm:block"></span>
-                    <span className="text-right">Project Status</span>
-                </div>
+            {/* History List */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 className="text-xl font-semibold text-gray-800 mb-6">Project History</h2>
 
                 {loading ? (
-                    <div className="text-center py-4 text-gray-500">Loading projects...</div>
+                    <div className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    </div>
                 ) : projects.length === 0 ? (
-                    <div className="text-center py-4 text-gray-500">No projects found</div>
+                    <div className="text-center py-12">
+                        <div className="text-gray-400 mb-2">📁</div>
+                        <p className="text-gray-600">No projects found</p>
+                    </div>
                 ) : (
-                    <div className="bg-purple-50 rounded-lg p-4 mt-2">
+                    <div className="space-y-4">
                         {projects.map((project, index) => (
-                            <div key={index} className="grid grid-cols-2 sm:grid-cols-3 items-center py-2 border-b last:border-b-0">
-                                <div className="flex items-center space-x-3">
-                                    <span className="w-8 h-8 flex items-center justify-center bg-purple-300 text-white rounded-full font-bold">
-                                        A
-                                    </span>
-                                    <span>{project.file_name}</span>
-                                </div>
-                                <div className="hidden sm:block"></div>
-                                <div className="flex justify-end">
-                                    <CheckSquare className="text-purple-700" size={18} />
+                            <div
+                                key={index}
+                                className="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition-all duration-300"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="p-2 bg-purple-50 rounded-lg">
+                                        <FileText className="w-5 h-5 text-purple-500" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-lg font-semibold text-gray-800">{project.file_name}</h3>
+                                        <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                                            <Calendar className="w-4 h-4" />
+                                            <span>{project.date || "No date available"}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <CheckSquare className="w-5 h-5 text-purple-500" />
+                                        <span className="text-sm font-medium text-gray-600">Completed</span>
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -105,9 +129,9 @@ const Body = () => {
 
 const History = () => {
     return (
-        <div className="flex h-screen">
+        <div className="flex h-screen bg-gray-50">
             <NavBar />
-            <div className="flex flex-col flex-1">
+            <div className="flex-1 flex flex-col">
                 <Body />
             </div>
         </div>

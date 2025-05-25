@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { FaThLarge, FaProjectDiagram, FaUser, FaBars, FaTimes, FaHistory, FaSignOutAlt, FaSprayCan } from "react-icons/fa";
+import { FaThLarge, FaProjectDiagram, FaUser, FaBars, FaTimes, FaHistory, FaSignOutAlt, FaSprayCan, FaChartBar } from "react-icons/fa";
+import { User } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import prfImage from "../assets/images/avatar.png"; // Replace with actual path
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const [loggedUser, setLoggedUser] = useState({});
 
-
   const menuItems = [
     { name: "Dashboard", path: "/dashboard", icon: <FaThLarge /> },
     { name: "Projects", path: "/projects", icon: <FaProjectDiagram /> },
+    { name: "Stats", path: "/stats", icon: <FaChartBar /> },
     { name: "Account", path: "/account", icon: <FaUser /> },
     { name: "History", path: "/history", icon: <FaHistory /> },
     { name: "Predictions", path: "/home", icon: <FaSprayCan /> },
@@ -32,7 +32,7 @@ export default function Navbar() {
         <p className="mb-2 font-semibold">Are you sure you want to logout?</p>
         <div className="flex gap-4">
           <button
-            className="bg-red-600 text-white px-3 py-1 rounded-md"
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200"
             onClick={() => {
               localStorage.removeItem("file_name");
               localStorage.removeItem("user");
@@ -44,7 +44,7 @@ export default function Navbar() {
             Yes
           </button>
           <button
-            className="bg-gray-400 text-white px-3 py-1 rounded-md"
+            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors duration-200"
             onClick={() => toast.dismiss()}
           >
             No
@@ -61,37 +61,48 @@ export default function Navbar() {
     );
   };
 
-
   return (
     <>
       {/* Sidebar for larger screens */}
-      <div className={`w-64 h-screen bg-white p-5 flex flex-col gap-6 shadow-md fixed md:relative transition-transform transform ${isOpen ? 'translate-x-0' : '-translate-x-64'} md:translate-x-0`}>
-        <div className="flex items-center justify-between md:justify-start gap-3">
-          <div className="flex items-center gap-3">
-            <img src={prfImage} alt="User" className="w-10 h-10 rounded-full object-cover" />
-            <div>
-              <h2 className="font-semibold">{loggedUser.name}</h2>
-              <p className="text-sm text-gray-500">User</p>
+      <div
+        className={`fixed top-0 left-0 h-screen w-72 bg-white/80 backdrop-blur-lg p-6 flex flex-col gap-8 shadow-lg transition-all duration-300 ease-in-out z-50 ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+          }`}
+      >
+        {/* User Profile Section */}
+        <div className="flex items-center gap-4 p-4 bg-white/50 rounded-xl shadow-sm">
+          <div className="relative">
+            <div className="w-12 h-12 rounded-full bg-gray-100 border-2 border-gray-100 shadow-md hover:border-blue-500 transition-all duration-300 flex items-center justify-center">
+              <User className="w-6 h-6 text-gray-600" />
             </div>
+            <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white"></div>
           </div>
-          {/* Close button for mobile */}
-          <button className="md:hidden text-gray-600" onClick={() => setIsOpen(false)}>
+          <div>
+            <h2 className="font-semibold text-gray-800">{loggedUser.name || "Guest"}</h2>
+            <p className="text-sm text-gray-500">{loggedUser.email ? "User" : "Not Logged In"}</p>
+          </div>
+          <button
+            className="md:hidden ml-auto text-gray-500 hover:text-gray-700 transition-colors duration-200"
+            onClick={() => setIsOpen(false)}
+          >
             <FaTimes size={20} />
           </button>
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex flex-col gap-2 flex-grow">
+        <nav className="flex flex-col gap-2">
           {menuItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-3 p-3 rounded-md transition duration-300 ease-in-out ${isActive ? "bg-gray-800 text-white" : "bg-gray-300 text-gray-700 hover:bg-gray-400"
+                `flex items-center gap-4 p-4 rounded-xl transition-all duration-200 ${isActive
+                  ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                 }`
               }
             >
-              {item.icon} {item.name}
+              <span className="text-lg">{item.icon}</span>
+              <span className="font-medium">{item.name}</span>
             </NavLink>
           ))}
         </nav>
@@ -99,32 +110,42 @@ export default function Navbar() {
         {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 p-3 rounded-md bg-red-500 text-white hover:bg-red-600 transition"
+          className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md mt-auto"
         >
-          <FaSignOutAlt /> Logout
+          <FaSignOutAlt className="text-lg" />
+          <span className="font-medium">Logout</span>
         </button>
       </div>
 
       {/* Mobile Navbar Toggle Button */}
-      <button className="md:hidden fixed top-4 left-4 z-50 bg-white p-2 rounded-full shadow-md" onClick={() => setIsOpen(true)}>
-        <FaBars size={20} />
+      <button
+        className="md:hidden fixed top-4 left-4 z-50 bg-white/80 backdrop-blur-lg p-3 rounded-full shadow-lg hover:bg-white transition-all duration-200"
+        onClick={() => setIsOpen(true)}
+      >
+        <FaBars size={20} className="text-gray-700" />
       </button>
 
       {/* Bottom Navigation for Mobile */}
-      <div className="fixed bottom-0 left-0 w-full bg-white p-3 flex justify-around shadow-md md:hidden">
+      <div className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-lg p-4 flex justify-around shadow-lg md:hidden">
         {menuItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex flex-col items-center ${isActive ? "text-gray-900 font-semibold" : "text-gray-700"}`
+              `flex flex-col items-center gap-1 transition-all duration-200 ${isActive
+                ? "text-blue-600 scale-110"
+                : "text-gray-600 hover:text-gray-900"
+              }`
             }
           >
-            {item.icon}
-            <span className="text-xs">{item.name}</span>
+            <span className="text-xl">{item.icon}</span>
+            <span className="text-xs font-medium">{item.name}</span>
           </NavLink>
         ))}
       </div>
+
+      {/* Main Content Margin for Desktop */}
+      <div className="hidden md:block md:ml-72"></div>
     </>
   );
 }

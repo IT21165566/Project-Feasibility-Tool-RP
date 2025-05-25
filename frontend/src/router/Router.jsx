@@ -11,6 +11,7 @@ import Projects from "../pages/Projects";
 import Account from "../pages/Account";
 import History from "../pages/History";
 import Reccomandation from "../pages/Reccomandation";
+import Stats from "../pages/Stats";
 
 const router = createBrowserRouter([
   {
@@ -34,6 +35,14 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <Projects />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/stats",
+    element: (
+      <ProtectedRoute>
+        <Stats />
       </ProtectedRoute>
     ),
   },

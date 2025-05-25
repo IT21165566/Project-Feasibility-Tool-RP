@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "../components/Header";
 import NavBar from "../components/Navbar";
-import { Eye, Trash2 } from "lucide-react";
+import { Eye, Trash2, TrendingUp, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-
+import ReactApexChart from "react-apexcharts";
 
 const Body = () => {
   const [projects, setProjects] = useState([]);
@@ -93,75 +92,218 @@ const Body = () => {
   });
 
   const statusColor = {
-    "Highly Feasible": "bg-green-500",
-    "Not Feasible": "bg-red-500",
-    "Moderately Feasible": "bg-yellow-500",
+    "Highly Feasible": "bg-emerald-500",
+    "Not Feasible": "bg-rose-500",
+    "Moderately Feasible": "bg-amber-500",
     "Marginally Feasible": "bg-orange-500",
+  };
+
+  const statusIcon = {
+    "Highly Feasible": <CheckCircle className="w-5 h-5" />,
+    "Not Feasible": <XCircle className="w-5 h-5" />,
+    "Moderately Feasible": <TrendingUp className="w-5 h-5" />,
+    "Marginally Feasible": <AlertTriangle className="w-5 h-5" />,
   };
 
   const handleViewProject = (project) => {
     navigate("/recommandation", { state: { project } });
   };
 
+  // Chart configurations
+  const pieChartOptions = {
+    chart: {
+      type: 'pie',
+      height: 350,
+    },
+    labels: ['Highly Feasible', 'Moderately Feasible', 'Marginally Feasible', 'Not Feasible'],
+    colors: ['#10B981', '#F59E0B', '#F97316', '#EF4444'],
+    legend: {
+      position: 'bottom',
+    },
+    responsive: [{
+      breakpoint: 480,
+      options: {
+        chart: {
+          width: 300
+        },
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }]
+  };
+
+  const pieChartSeries = [
+    highlyFeasibleCount,
+    moderatelyFeasibleCount,
+    marginallyFeasibleCount,
+    notFeasibleCount
+  ];
+
+  const lineChartOptions = {
+    chart: {
+      type: 'line',
+      height: 350,
+      toolbar: {
+        show: false
+      }
+    },
+    stroke: {
+      curve: 'smooth',
+      width: 2
+    },
+    xaxis: {
+      categories: projects.map((_, index) => `Project ${index + 1}`),
+      labels: {
+        style: {
+          colors: '#6B7280'
+        }
+      }
+    },
+    yaxis: {
+      labels: {
+        style: {
+          colors: '#6B7280'
+        }
+      }
+    },
+    grid: {
+      borderColor: '#E5E7EB',
+      strokeDashArray: 4,
+    },
+    tooltip: {
+      theme: 'light'
+    },
+    colors: ['#3B82F6']
+  };
+
+  const lineChartSeries = [{
+    name: 'Feasibility Score',
+    data: projects.map(project => {
+      const results = [
+        project.financial_result,
+        project.operational_result,
+        project.organizational_result,
+        project.technical_result
+      ];
+      const score = results.reduce((acc, curr) => {
+        if (curr === 'L1') return acc + 4;
+        if (curr === 'L2') return acc + 3;
+        if (curr === 'L3') return acc + 2;
+        return acc + 1;
+      }, 0) / 4;
+      return score;
+    })
+  }];
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
+    <div className="p-8 bg-gray-50 min-h-screen">
+      {/* Welcome Section */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">Welcome Back!</h1>
+        <p className="text-gray-600 mt-2">Here's an overview of your project feasibility analysis</p>
+      </div>
+
       {/* Top Metrics */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow-md text-center col-span-1 h-62 flex flex-col justify-center">
-          <p className="text-red-500 font-semibold">Total Projects</p>
-          <p className="text-4xl font-bold">{totalProjects}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 font-medium">Total Projects</h3>
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-blue-500" />
+            </div>
+          </div>
+          <p className="text-4xl font-bold text-gray-800">{totalProjects}</p>
         </div>
-        <div className="grid grid-cols-3 gap-4 col-span-3">
-          <div className="bg-white p-4 rounded-lg shadow-md text-center h-32 flex flex-col justify-center">
-            <p className="text-green-600 font-semibold">Highly Feasible Projects</p>
-            <p className="text-3xl font-bold">{highlyFeasibleCount}</p>
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 font-medium">Highly Feasible</h3>
+            <div className="p-2 bg-emerald-50 rounded-lg">
+              <CheckCircle className="w-5 h-5 text-emerald-500" />
+            </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-md text-center h-32 flex flex-col justify-center">
-            <p className="text-blue-600 font-semibold">Moderately Feasible Projects</p>
-            <p className="text-3xl font-bold">{moderatelyFeasibleCount}</p>
+          <p className="text-4xl font-bold text-emerald-600">{highlyFeasibleCount}</p>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 font-medium">Moderately Feasible</h3>
+            <div className="p-2 bg-amber-50 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-amber-500" />
+            </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-md text-center h-32 flex flex-col justify-center">
-            <p className="text-yellow-500 font-semibold">Marginally Feasible Projects</p>
-            <p className="text-3xl font-bold">{marginallyFeasibleCount}</p>
+          <p className="text-4xl font-bold text-amber-600">{moderatelyFeasibleCount}</p>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 font-medium">Not Feasible</h3>
+            <div className="p-2 bg-rose-50 rounded-lg">
+              <XCircle className="w-5 h-5 text-rose-500" />
+            </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-md text-center h-32 flex flex-col justify-center col-span-3">
-            <p className="text-red-500 font-semibold">Not Feasible Projects</p>
-            <p className="text-3xl font-bold">{notFeasibleCount}</p>
-          </div>
+          <p className="text-4xl font-bold text-rose-600">{notFeasibleCount}</p>
+        </div>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Line Chart */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Project Feasibility Trend</h3>
+          <ReactApexChart
+            options={lineChartOptions}
+            series={lineChartSeries}
+            type="line"
+            height={350}
+          />
+        </div>
+
+        {/* Pie Chart */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Feasibility Distribution</h3>
+          <ReactApexChart
+            options={pieChartOptions}
+            series={pieChartSeries}
+            type="pie"
+            height={350}
+          />
         </div>
       </div>
 
       {/* Latest Report */}
       {latestProject && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex justify-between items-center mb-2">
-            <p className="font-semibold">Latest Report</p>
-            <p className="text-gray-500 text-sm">{new Date().toLocaleDateString()}</p>
-          </div>
-          <div className="p-6 bg-white rounded-lg shadow-md flex items-center justify-between border border-gray-200">
-            <div className="flex-1">
-              <p className="text-gray-500 text-sm">Project Name</p>
-              <p className="text-3xl font-semibold text-gray-800">{latestProject.file_name}</p>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <span
-                className={`px-4 py-2 text-sm font-semibold rounded-full shadow-md text-white ${statusColor[projectStatus] || "bg-gray-400"}`}
-              >
-                {projectStatus || "Pending"}
-              </span>
-
-              <button
-                onClick={() => handleViewProject(latestProject)}
-                className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition duration-200"
-              >
-                <Eye className="text-gray-600 w-5 h-5" />
-              </button>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-800">Latest Project Analysis</h2>
+              <p className="text-gray-500 text-sm mt-1">{new Date().toLocaleDateString()}</p>
             </div>
           </div>
 
+          <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex-1">
+                <p className="text-gray-500 text-sm mb-1">Project Name</p>
+                <p className="text-2xl font-semibold text-gray-800">{latestProject.file_name}</p>
+              </div>
 
+              <div className="flex items-center gap-4">
+                <div className={`px-4 py-2 rounded-full flex items-center gap-2 ${statusColor[projectStatus] || "bg-gray-400"} text-white`}>
+                  {statusIcon[projectStatus]}
+                  <span className="font-medium">{projectStatus || "Pending"}</span>
+                </div>
+
+                <button
+                  onClick={() => handleViewProject(latestProject)}
+                  className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition duration-200 text-gray-600 hover:text-gray-800"
+                >
+                  <Eye className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -169,9 +311,9 @@ const Body = () => {
 };
 
 const Dashboard = () => (
-  <div className="flex h-screen">
+  <div className="flex h-screen bg-gray-50">
     <NavBar />
-    <div className="flex-1 flex flex-col bg-gray-100">
+    <div className="flex-1 flex flex-col">
       <Header />
       <Body />
     </div>
